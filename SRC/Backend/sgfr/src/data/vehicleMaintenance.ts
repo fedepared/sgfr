@@ -4,7 +4,7 @@ const vehicleMaintenanceSchema = new Schema({
     vehicleMaintenanceType: {type: Schema.Types.ObjectId, ref: 'VehicleMaintenanceType'},
     vehicle: {type: Schema.Types.ObjectId, ref: 'Vehicle'},
     price : {type: Number, required: true}
-})
+},{timestamps: true})
 
 //lee el schema y arma el tipo
 export type VehicleMaintenance = InferSchemaType<typeof vehicleMaintenanceSchema>;

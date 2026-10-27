@@ -5,7 +5,7 @@ const customerSchema = new Schema({
     lastName: {type: String, required: true},
     idCard: {type: Number, default: 0, required: true},
     addresses : {type: [String], default: [], required: true}
-})
+},{timestamps: true})
 
 //lee el schema y arma el tipo
 export type Customer = InferSchemaType<typeof customerSchema>;

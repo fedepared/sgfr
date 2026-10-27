@@ -2,7 +2,7 @@ import {Schema, model, InferSchemaType} from 'mongoose';
 
 const vehicleTypeSchema = new Schema({
     vehicleTypeName : {type: String, required: true}
-})
+},{timestamps: true})
 
 
 //lee el schema y arma el tipo

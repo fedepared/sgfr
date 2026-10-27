@@ -5,7 +5,7 @@ const userSchema = new Schema ({
     passwordHash : {type: String , required: true},
     roleType : {type: Schema.Types.ObjectId, ref: 'Role'} 
     
-})
+},{timestamps: true})
 
 //lee el schema y arma el tipo
 export type User = InferSchemaType<typeof userSchema>;

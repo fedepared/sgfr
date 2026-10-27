@@ -6,7 +6,7 @@ const deliverySchema = new Schema({
     timeRange: {type: String, enum: ["8:00 a 13:00", "13:00 a 18", "18:00 a 23:00"]},
     status : {type: Schema.Types.ObjectId, ref: 'DeliveryStatus'},
     distance: {type: Number, required: true}
-})
+},{timestamps: true})
 
 //lee el schema y arma el tipo
 export type Delivery = InferSchemaType<typeof deliverySchema>;

@@ -4,7 +4,7 @@ const licenseTypeSchema = new Schema({
     licenseTypeLetter: {type: String, required: true, minLength:1,maxLength:1},
     licenseTypeNumber: {type: Number, required: true, min: 1, max:4},
     description: {type: String, default: 0, required: true}
-})
+},{timestamps: true})
 
 //lee el schema y arma el tipo
 export type LicenseType = InferSchemaType<typeof licenseTypeSchema>;

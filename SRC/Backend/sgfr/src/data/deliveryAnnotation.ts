@@ -4,7 +4,7 @@ const deliveryAnnotationSchema = new Schema({
     delivery: {type: Schema.Types.ObjectId, ref: 'Delivery'},
     deliveryStatus: {type: Schema.Types.ObjectId, ref: 'DeliveryStatus'},
     detail: {type: String, required: true, minLength: 0, maxLength: 200}
-})
+},{timestamps: true})
 
 //lee el schema y arma el tipo
 export type DeliveryAnnotation = InferSchemaType<typeof deliveryAnnotationSchema>;

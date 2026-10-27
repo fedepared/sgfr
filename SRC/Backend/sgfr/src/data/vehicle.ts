@@ -5,7 +5,7 @@ const vehicleSchema = new Schema({
     vehicleType: {type: Schema.Types.ObjectId, ref: 'VehicleType'},
     capacity: {type: Number, default: 0, required: true},
     status : {type: Schema.Types.ObjectId, ref: 'VehicleStatusType'}
-})
+},{timestamps: true})
 
 //lee el schema y arma el tipo
 export type Vehicle = InferSchemaType<typeof vehicleSchema>;

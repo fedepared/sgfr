@@ -4,7 +4,7 @@ const roadMapSchema = new Schema({
     date: {type: Date, required: true},
     vehicle: {type: Schema.Types.ObjectId, ref: 'Vehicle'},
     driver: {type: Schema.Types.ObjectId, ref: 'Driver'}
-})
+},{timestamps: true})
 
 //lee el schema y arma el tipo
 export type RoadMap = InferSchemaType<typeof roadMapSchema>;

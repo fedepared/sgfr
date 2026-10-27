@@ -2,7 +2,7 @@ import {Schema, model, InferSchemaType} from  'mongoose';
 
 const vehicleMaintenanceTypeSchema = new Schema({
     description: {type: String, required: true}
-})
+},{timestamps: true})
 
 //lee el schema y arma el tipo
 export type VehicleMaintenanceType = InferSchemaType<typeof vehicleMaintenanceTypeSchema>;
