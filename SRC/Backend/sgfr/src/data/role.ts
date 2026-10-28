@@ -1,12 +1,11 @@
-import {Schema, model, InferSchemaType} from 'mongoose';
+import { Schema, model, InferSchemaType } from 'mongoose';
 
-const roleSchema = new Schema({
-    roleName : { type: String, required: true }
-},{timestamps: true})
+const roleSchema = new Schema(
+  {
+    roleName: { type: String, required: true, unique: true },
+  },
+  { timestamps: true }
+);
 
-//lee el schema y arma el tipo
 export type Role = InferSchemaType<typeof roleSchema>;
-
-//registra el schema y devuelve un modelo (objeto para consultar y escribir en la coleccion)
-const RoleModel = model<Role>('Role', roleSchema);
- 
+export const RoleModel = model<Role>('Role', roleSchema);

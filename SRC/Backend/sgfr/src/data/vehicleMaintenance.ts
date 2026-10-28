@@ -1,13 +1,15 @@
-import {Schema, model, InferSchemaType} from  'mongoose';
+import { Schema, model, InferSchemaType } from 'mongoose';
 
-const vehicleMaintenanceSchema = new Schema({
-    vehicleMaintenanceType: {type: Schema.Types.ObjectId, ref: 'VehicleMaintenanceType'},
-    vehicle: {type: Schema.Types.ObjectId, ref: 'Vehicle'},
-    price : {type: Number, required: true}
-},{timestamps: true})
+const vehicleMaintenanceSchema = new Schema(
+  {
+    vehicleMaintenanceType: { type: Schema.Types.ObjectId, ref: 'VehicleMaintenanceType', required: true },
+    vehicle: { type: Schema.Types.ObjectId, ref: 'Vehicle', required: true },
+    price: { type: Number, required: true },
+    date: { type: Date, default: Date.now, required: true },
+    description: { type: String, default: '' },
+  },
+  { timestamps: true }
+);
 
-//lee el schema y arma el tipo
 export type VehicleMaintenance = InferSchemaType<typeof vehicleMaintenanceSchema>;
-
-//registra el schema y devuelve un modelo (objeto para consultar y escribir en la coleccion)
-const VehicleMaintenanceModel = model<VehicleMaintenance>('VehicleMaintenance', vehicleMaintenanceSchema);
+export const VehicleMaintenanceModel = model<VehicleMaintenance>('VehicleMaintenance', vehicleMaintenanceSchema);
