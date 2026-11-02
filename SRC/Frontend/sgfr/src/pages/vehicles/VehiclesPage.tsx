@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Table, Tag, Button, Space, Card, Input, Modal, Form, InputNumber, App } from 'antd';
+import { Table, Tag, Button, Space, Card, Input, Modal, Form, InputNumber, App, Select } from 'antd';
 import {
   PlusOutlined,
   ReloadOutlined,
@@ -53,8 +53,6 @@ export const VehiclesPage: React.FC = () => {
       const response = await vehicleService.getAll();
       if (response?.data && response.data.length > 0) {
         setVehicles(response.data);
-      } else {
-        setVehicles(initialMockVehicles);
       }
     } catch {
       setVehicles(initialMockVehicles);
@@ -243,7 +241,26 @@ export const VehiclesPage: React.FC = () => {
           >
             <Input placeholder="Ej: AF123CD" />
           </Form.Item>
-
+          <Form.Item
+            name="vehicleType"
+            label="Tipo de vehiculo"
+            rules={[
+              { required: true, message: 'El tipo de vehiculo es obligatoria' },
+            ]}
+            >
+            <Select
+                defaultValue="lucy"
+                style={{ width: 120 }}
+                // onChange={handleChange}
+                options={[
+                  { value: 'jack', label: 'Jack' },
+                  { value: 'lucy', label: 'Lucy' },
+                  { value: 'Yiminghe', label: 'yiminghe' },
+                  { value: 'disabled', label: 'Disabled', disabled: true },
+                ]}
+            />
+            
+          </Form.Item>
           <Form.Item
             name="capacity"
             label="Capacidad de Carga (kg)"

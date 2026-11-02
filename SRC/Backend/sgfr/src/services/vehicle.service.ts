@@ -4,26 +4,7 @@ import { VehicleTypeModel } from '../data/vehicleType';
 import { VehicleStatusTypeModel } from '../data/vehicleStatusType';
 import { AppError } from '../utils/AppError';
 import { getPaginationParams, PaginatedResponse, PaginationQuery } from '../utils/pagination';
-
-export interface VehicleFilterQuery extends PaginationQuery {
-  search?: string;
-  status?: string;
-  vehicleType?: string;
-}
-
-export interface CreateVehicleDTO {
-  licensePlate: string;
-  vehicleType: string;
-  capacity: number;
-  status: string;
-}
-
-export interface UpdateVehicleDTO {
-  licensePlate?: string;
-  vehicleType?: string;
-  capacity?: number;
-  status?: string;
-}
+import { VehicleFilterQuery, CreateVehicleDTO, UpdateVehicleDTO } from '../utils/DTOs/Vehicle';
 
 export class VehicleService {
   async getAll(query: VehicleFilterQuery): Promise<PaginatedResponse<any>> {

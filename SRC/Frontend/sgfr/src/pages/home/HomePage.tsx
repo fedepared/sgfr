@@ -38,7 +38,7 @@ export const HomePage: React.FC = () => {
           <Card hoverable bordered={false} style={{ background: '#f0f5ff' }}>
             <Statistic
               title="Vehículos en Flota"
-              value={12}
+              value={4}
               prefix={<CarOutlined style={{ color: '#1677ff' }} />}
             />
           </Card>
@@ -47,7 +47,7 @@ export const HomePage: React.FC = () => {
           <Card hoverable bordered={false} style={{ background: '#f6ffed' }}>
             <Statistic
               title="Repartos Completados"
-              value={48}
+              value={0}
               valueStyle={{ color: '#52c41a' }}
               prefix={<CheckCircleOutlined />}
             />
@@ -57,7 +57,7 @@ export const HomePage: React.FC = () => {
           <Card hoverable bordered={false} style={{ background: '#fffbe6' }}>
             <Statistic
               title="Entregas Pendientes"
-              value={5}
+              value={0}
               valueStyle={{ color: '#faad14' }}
               prefix={<ClockCircleOutlined />}
             />
@@ -67,7 +67,7 @@ export const HomePage: React.FC = () => {
           <Card hoverable bordered={false} style={{ background: '#fff0f6' }}>
             <Statistic
               title="Mantenimientos Activos"
-              value={2}
+              value={0}
               valueStyle={{ color: '#eb2f96' }}
             />
           </Card>
@@ -79,7 +79,7 @@ export const HomePage: React.FC = () => {
       <Card title="Acerca del Proyecto SGFR" style={{ marginTop: 16 }}>
         <Title level={5}>Objetivo del Sistema</Title>
         <Paragraph>
-          Esta aplicación forma parte del Trabajo Práctico de <strong>Programación III</strong>.
+          Trabajo Práctico <strong>Programación III</strong>.
           Permite coordinar vehículos, choferes, hojas de ruta y entregas de mercadería con
           seguimiento de estados y trazabilidad de eventos.
         </Paragraph>
@@ -94,7 +94,7 @@ export const HomePage: React.FC = () => {
         </ul>
         <Space style={{ marginTop: 8 }}>
           <Button type="primary" onClick={() => navigate(ROUTES.VEHICLES)}>
-            Ver Gestión de Flota
+            Ver Flota de Autos
           </Button>
         </Space>
       </Card>
