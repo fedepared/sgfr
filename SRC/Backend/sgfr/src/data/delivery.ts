@@ -1,13 +1,14 @@
 import { Schema, model, InferSchemaType } from 'mongoose';
+import { deliveryAnnotationSchema } from './deliveryAnnotation';
 
-const deliverySchema = new Schema(
+export const deliverySchema = new Schema(
   {
     customer: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
     address: { type: String, required: true },
     timeRange: { type: String, enum: ['8:00 a 13:00', '13:00 a 18:00', '18:00 a 23:00'], required: true },
-    status: { type: Schema.Types.ObjectId, ref: 'DeliveryStatus', required: true },
+    status: { type: String, enum: ["Creado","En Preparación","En camino","Entregado","Fallo en la entrega"], default: "Creado"},
     distance: { type: Number, required: true },
-    roadMap: { type: Schema.Types.ObjectId, ref: 'RoadMap', default: null },
+    annotations: { type: [deliveryAnnotationSchema] }
   },
   { timestamps: true }
 );

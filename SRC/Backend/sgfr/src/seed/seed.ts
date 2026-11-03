@@ -3,8 +3,6 @@ import bcrypt from 'bcrypt';
 import { config } from '../config';
 import { RoleModel } from '../data/role';
 import { UserModel } from '../data/user';
-import { VehicleTypeModel } from '../data/vehicleType';
-import { VehicleStatusTypeModel } from '../data/vehicleStatusType';
 import { VehicleModel } from '../data/vehicle';
 
 const seedDatabase = async () => {
@@ -13,7 +11,7 @@ const seedDatabase = async () => {
     await mongoose.connect(config.databaseUrl);
     console.log('Conectado a MongoDB:', config.databaseUrl);
 
-    //Roles
+    // Roles
     console.log('creando roles...');
     const roles = ['coordinador', 'chofer'];
     const rolesACargar: Record<string, any> = {};
@@ -29,8 +27,8 @@ const seedDatabase = async () => {
       rolesACargar[roleName] = role;
     }
 
-    // 2. Usuarios Iniciales
-    console.log('\n creando usuarios...');
+    // Usuarios iniciales
+    console.log('\ncreando usuarios...');
     const usersAAgregar = [
       {
         userName: 'coordinador_prueba',
@@ -59,66 +57,34 @@ const seedDatabase = async () => {
       }
     }
 
-    // 3. Tipos de Vehículo
-    console.log('\n creando tipos de vehículo...');
-    const vehicleTypes = ['Moto','Auto','Camión', 'Camioneta', 'Furgón', 'Utilitario'];
-    const vehicleTypesAAgregar: Record<string, any> = {};
-
-    for (const typeName of vehicleTypes) {
-      let typeDoc = await VehicleTypeModel.findOne({ vehicleTypeName: typeName });
-      if (!typeDoc) {
-        typeDoc = await VehicleTypeModel.create({ vehicleTypeName: typeName });
-        console.log(` Tipo creado: ${typeName}`);
-      } else {
-        console.log(` Tipo existente: ${typeName}`);
-      }
-      vehicleTypesAAgregar[typeName] = typeDoc;
-    }
-
-    // 4. Estados de Vehículo
-    console.log('\n creando estados de vehículo...');
-    const vehicleStatuses = ['Disponible', 'En ruta', 'En mantenimiento', 'Fuera de servicio'];
-    const vehicleStatusAAgregar: Record<string, any> = {};
-
-    for (const statusName of vehicleStatuses) {
-      let statusDoc = await VehicleStatusTypeModel.findOne({ statusName });
-      if (!statusDoc) {
-        statusDoc = await VehicleStatusTypeModel.create({ statusName });
-        console.log(` Estado creado: ${statusName}`);
-      } else {
-        console.log(` Estado existente: ${statusName}`);
-      }
-      vehicleStatusAAgregar[statusName] = statusDoc;
-    }
-
-    // 5. Vehículos Iniciales
-    console.log('\n creando vehículos de prueba...');
+    // Vehículos iniciales
+    console.log('\ncreando vehículos de prueba...');
     const vehiclesArray = [
       {
         licensePlate: 'AF123BC',
-        vehicleType: vehicleTypesAAgregar['Camión']._id,
+        vehicleType: 'Camion',
         capacity: 5000,
-        status: vehicleStatusAAgregar['Disponible']._id,
+        status: 'Disponible',
       },
       {
         licensePlate: 'AE456DE',
-        vehicleType: vehicleTypesAAgregar['Furgón']._id,
+        vehicleType: 'Furgon',
         capacity: 1500,
-        status: vehicleStatusAAgregar['Disponible']._id,
+        status: 'Disponible',
       },
       {
         licensePlate: 'AD789FG',
-        vehicleType: vehicleTypesAAgregar['Camioneta']._id,
+        vehicleType: 'Auto',
         capacity: 1000,
-        status: vehicleStatusAAgregar['En ruta']._id,
+        status: 'En ruta',
       },
       {
         licensePlate: 'AC321HJ',
-        vehicleType: vehicleTypesAAgregar['Utilitario']._id,
+        vehicleType: 'Utilitario',
         capacity: 800,
-        status: vehicleStatusAAgregar['En mantenimiento']._id,
+        status: 'En mantenimiento',
       },
-    ];
+    ] as const;
 
     for (const v of vehiclesArray) {
       const vehiculoExistente = await VehicleModel.findOne({ licensePlate: v.licensePlate });

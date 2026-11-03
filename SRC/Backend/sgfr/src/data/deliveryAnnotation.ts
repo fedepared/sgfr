@@ -1,10 +1,9 @@
 import { Schema, model, InferSchemaType } from 'mongoose';
 
-const deliveryAnnotationSchema = new Schema(
+export const deliveryAnnotationSchema = new Schema(
   {
-    delivery: { type: Schema.Types.ObjectId, ref: 'Delivery', required: true },
-    deliveryStatus: { type: Schema.Types.ObjectId, ref: 'DeliveryStatus', required: true },
     detail: { type: String, required: true, minLength: 0, maxLength: 200 },
+    status: { type: String, enum: ["Creado","En Preparación","En camino","Entregado","Fallo en la entrega"], default: "Creado"},
   },
   { timestamps: true }
 );

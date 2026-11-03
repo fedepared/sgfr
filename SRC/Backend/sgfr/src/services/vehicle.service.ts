@@ -1,10 +1,15 @@
 import mongoose from 'mongoose';
 import { VehicleModel } from '../data/vehicle';
-import { VehicleTypeModel } from '../data/vehicleType';
-import { VehicleStatusTypeModel } from '../data/vehicleStatusType';
 import { AppError } from '../utils/AppError';
 import { getPaginationParams, PaginatedResponse, PaginationQuery } from '../utils/pagination';
 import { VehicleFilterQuery, CreateVehicleDTO, UpdateVehicleDTO } from '../utils/DTOs/Vehicle';
+
+const VEHICLE_STATUSES = ['Disponible', 'En ruta', 'En mantenimiento', 'Fuera de servicio'] as const;
+type VehicleStatus = (typeof VEHICLE_STATUSES)[number];
+
+const isVehicleStatus = (status: string): status is VehicleStatus => {
+  return VEHICLE_STATUSES.includes(status as VehicleStatus);
+};
 
 export class VehicleService {
   async getAll(query: VehicleFilterQuery): Promise<PaginatedResponse<any>> {
@@ -16,57 +21,45 @@ export class VehicleService {
     }
 
     if (query.status && query.status.trim()) {
-      if (mongoose.isValidObjectId(query.status)) {
-        filter.status = query.status;
-      } else {
-        const statusDoc = await VehicleStatusTypeModel.findOne({
-          statusName: { $regex: `^${query.status.trim()}$`, $options: 'i' },
-        });
-        if (statusDoc) {
-          filter.status = statusDoc._id;
-        } else {
-          // Si buscó un estado inexistente, devolvemos lista vacía
-          return {
-            data: [],
-            pagination: {
-              totalItems: 0,
-              totalPages: 0,
-              currentPage: page,
-              limit,
-            },
-          };
-        }
+      const requestedStatus = query.status.trim();
+      const matchingStatus = VEHICLE_STATUSES.find(
+        (vehicleStatus) => vehicleStatus.toLowerCase() === requestedStatus.toLowerCase()
+      );
+
+      if (!matchingStatus) {
+        return {
+          data: [],
+          pagination: {
+            totalItems: 0,
+            totalPages: 0,
+            currentPage: page,
+            limit,
+          },
+        };
       }
+
+      filter.status = matchingStatus;
     }
 
     if (query.vehicleType && query.vehicleType.trim()) {
-      if (mongoose.isValidObjectId(query.vehicleType)) {
-        filter.vehicleType = query.vehicleType;
-      } else {
-        const typeDoc = await VehicleTypeModel.findOne({
-          vehicleTypeName: { $regex: `^${query.vehicleType.trim()}$`, $options: 'i' },
-        });
-        if (typeDoc) {
-          filter.vehicleType = typeDoc._id;
-        } else {
-          return {
-            data: [],
-            pagination: {
-              totalItems: 0,
-              totalPages: 0,
-              currentPage: page,
-              limit,
-            },
-          };
-        }
+      if (!mongoose.isValidObjectId(query.vehicleType)) {
+        return {
+          data: [],
+          pagination: {
+            totalItems: 0,
+            totalPages: 0,
+            currentPage: page,
+            limit,
+          },
+        };
       }
+
+      filter.vehicleType = query.vehicleType;
     }
 
     const [totalItems, vehicles] = await Promise.all([
       VehicleModel.countDocuments(filter),
       VehicleModel.find(filter)
-        .populate('vehicleType', 'vehicleTypeName')
-        .populate('status', 'statusName')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
@@ -90,9 +83,7 @@ export class VehicleService {
       throw new AppError('Identificador de vehículo inválido.', 400);
     }
 
-    const vehicle = await VehicleModel.findById(id)
-      .populate('vehicleType', 'vehicleTypeName')
-      .populate('status', 'statusName');
+    const vehicle = await VehicleModel.findById(id);
 
     if (!vehicle) {
       throw new AppError('Vehículo no encontrado.', 404);
@@ -123,18 +114,8 @@ export class VehicleService {
       throw new AppError('Identificador de tipo de vehículo inválido.', 400);
     }
 
-    const typeExists = await VehicleTypeModel.findById(vehicleType);
-    if (!typeExists) {
-      throw new AppError('El tipo de vehículo especificado no existe.', 404);
-    }
-
-    if (!mongoose.isValidObjectId(status)) {
-      throw new AppError('Identificador de estado de vehículo inválido.', 400);
-    }
-
-    const statusExists = await VehicleStatusTypeModel.findById(status);
-    if (!statusExists) {
-      throw new AppError('El estado de vehículo especificado no existe.', 404);
+    if (!isVehicleStatus(status)) {
+      throw new AppError('El estado de vehículo especificado no es válido.', 400);
     }
 
     const newVehicle = await VehicleModel.create({
@@ -144,9 +125,7 @@ export class VehicleService {
       status,
     });
 
-    return await VehicleModel.findById(newVehicle._id)
-      .populate('vehicleType', 'vehicleTypeName')
-      .populate('status', 'statusName');
+    return await VehicleModel.findById(newVehicle._id);
   }
 
   async update(id: string, data: UpdateVehicleDTO) {
@@ -187,52 +166,35 @@ export class VehicleService {
       if (!mongoose.isValidObjectId(data.vehicleType)) {
         throw new AppError('Identificador de tipo de vehículo inválido.', 400);
       }
-      const typeExists = await VehicleTypeModel.findById(data.vehicleType);
-      if (!typeExists) {
-        throw new AppError('El tipo de vehículo especificado no existe.', 404);
-      }
       updateFields.vehicleType = data.vehicleType;
     }
 
     if (data.status !== undefined) {
-      if (!mongoose.isValidObjectId(data.status)) {
-        throw new AppError('Identificador de estado de vehículo inválido.', 400);
-      }
-      const statusExists = await VehicleStatusTypeModel.findById(data.status);
-      if (!statusExists) {
-        throw new AppError('El estado de vehículo especificado no existe.', 404);
+      if (!isVehicleStatus(data.status)) {
+        throw new AppError('El estado de vehículo especificado no es válido.', 400);
       }
       updateFields.status = data.status;
     }
 
-    const updatedVehicle = await VehicleModel.findByIdAndUpdate(id, { $set: updateFields }, { new: true })
-      .populate('vehicleType', 'vehicleTypeName')
-      .populate('status', 'statusName');
+    const updatedVehicle = await VehicleModel.findByIdAndUpdate(id, { $set: updateFields }, { new: true });
 
     return updatedVehicle;
   }
 
-  async updateStatus(id: string, statusId: string) {
+  async updateStatus(id: string, status: string) {
     if (!mongoose.isValidObjectId(id)) {
       throw new AppError('Identificador de vehículo inválido.', 400);
     }
 
-    if (!statusId || !mongoose.isValidObjectId(statusId)) {
-      throw new AppError('Identificador de nuevo estado inválido.', 400);
-    }
-
-    const statusExists = await VehicleStatusTypeModel.findById(statusId);
-    if (!statusExists) {
-      throw new AppError('El estado de vehículo especificado no existe.', 404);
+    if (!isVehicleStatus(status)) {
+      throw new AppError('El estado de vehículo especificado no es válido.', 400);
     }
 
     const vehicle = await VehicleModel.findByIdAndUpdate(
       id,
-      { $set: { status: statusId } },
+      { $set: { status } },
       { new: true }
-    )
-      .populate('vehicleType', 'vehicleTypeName')
-      .populate('status', 'statusName');
+    );
 
     if (!vehicle) {
       throw new AppError('Vehículo no encontrado.', 404);

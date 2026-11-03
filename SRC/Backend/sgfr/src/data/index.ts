@@ -1,7 +1,6 @@
 export * from './customer';
 export * from './delivery';
 export * from './deliveryAnnotation';
-export * from './deliveryStatus';
 export * from './driver';
 export * from './errorLog';
 export * from './licenseType';
@@ -10,6 +9,3 @@ export * from './role';
 export * from './user';
 export * from './vehicle';
 export * from './vehicleMaintenance';
-export * from './vehicleMaintenanceType';
-export * from './vehicleStatusType';
-export * from './vehicleType';

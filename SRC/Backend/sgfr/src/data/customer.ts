@@ -5,7 +5,7 @@ const customerSchema = new Schema(
     name: { type: String, required: true },
     lastName: { type: String, required: true },
     idCard: { type: Number, default: 0, required: true },
-    addresses: { type: [String], default: [], required: true },
+    addresses: { type: [{street: String, zipCode: String, floor: Number, dept: String}], required: true },
   },
   { timestamps: true }
 );

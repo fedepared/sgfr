@@ -2,7 +2,7 @@ import { Schema, model, InferSchemaType } from 'mongoose';
 
 const vehicleMaintenanceSchema = new Schema(
   {
-    vehicleMaintenanceType: { type: Schema.Types.ObjectId, ref: 'VehicleMaintenanceType', required: true },
+    vehicleMaintenanceType: { type: String, enum: ["Aceite y filtro", "Correa", "Gomeria", "Alineación y Balanceo", "Otros"], required: true },
     vehicle: { type: Schema.Types.ObjectId, ref: 'Vehicle', required: true },
     price: { type: Number, required: true },
     date: { type: Date, default: Date.now, required: true },
