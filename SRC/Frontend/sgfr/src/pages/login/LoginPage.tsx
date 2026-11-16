@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Form, Input, Button, Typography, Alert, Space, App } from 'antd';
-import { UserOutlined, LockOutlined, LoginOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, LoginOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks';
 import { ROUTES } from '../../constants/routes.constant';
@@ -68,11 +68,10 @@ export const LoginPage: React.FC = () => {
 
         {errorMsg && (
           <Alert
-            message={errorMsg}
+            title={errorMsg}
             type="error"
-            showIcon
-            closable
-            onClose={() => setErrorMsg(null)}
+            showIcon            
+            closable={{ closeIcon: true, onClose: () => setErrorMsg(null), 'aria-label': 'close' }}
             style={{ marginBottom: 20 }}
           />
         )}
@@ -111,9 +110,17 @@ export const LoginPage: React.FC = () => {
           </Form.Item>
         </Form>
 
-        <div style={{ marginTop: 16, textAlign: 'center' }}>
-          <Space orientation="vertical" size={2}>
-            <Text type="secondary" style={{ fontSize: 12 }}>
+        <div style={{ marginTop: 20, textAlign: 'center' }}>
+          <Space direction="vertical" size={10} style={{ width: '100%' }}>
+            <Button
+              type="link"
+              icon={<InfoCircleOutlined />}
+              onClick={() => navigate(ROUTES.ABOUT)}
+              style={{ padding: 0 }}
+            >
+              Acerca del Proyecto SGFR
+            </Button>
+            <Text type="secondary" style={{ fontSize: 12, display: 'block' }}>
               Trabajo Práctico Final - Programación III
             </Text>
           </Space>

@@ -6,12 +6,16 @@ export interface ApiResponse<T = unknown> {
 }
 
 export interface PaginationInfo {
-  total: number;
-  page: number;
-  limit: number;
+  totalItems: number;
   totalPages: number;
+  currentPage: number;
+  limit: number;
 }
 
-export interface PaginatedResponse<T> extends ApiResponse<T[]> {
-  pagination?: PaginationInfo;
+export interface PaginatedResponse<T> {
+  status: 'success' | 'error';
+  data: T[];
+  pagination: PaginationInfo;
+  message?: string;
+  error?: string;
 }

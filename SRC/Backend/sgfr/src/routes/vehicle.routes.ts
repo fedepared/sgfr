@@ -38,12 +38,14 @@ router.use(authenticate);
  *         name: status
  *         schema:
  *           type: string
- *         description: Filtrar por ID o nombre de estado (ej. Disponible, En ruta, En mantenimiento)
+ *           enum: [Disponible, En ruta, En mantenimiento, Fuera de servicio]
+ *         description: Filtrar por estado del vehículo
  *       - in: query
  *         name: vehicleType
  *         schema:
  *           type: string
- *         description: Filtrar por ID o nombre de tipo (ej. Camión, Camioneta, Furgón)
+ *           enum: [Auto, Camion, Moto, Furgon, Utilitario]
+ *         description: Filtrar por tipo de vehículo
  *     responses:
  *       200:
  *         description: Listado paginado de vehículos.
@@ -106,20 +108,20 @@ router.get('/:id', (req, res, next) => vehicleController.getById(req, res, next)
  *                 example: AF999ZZ
  *               vehicleType:
  *                 type: string
- *                 description: ID de MongoDB de VehicleType
- *                 example: 671ff8890123456789abcdef
+ *                 enum: [Auto, Camion, Moto, Furgon, Utilitario]
+ *                 example: Camion
  *               capacity:
  *                 type: number
  *                 example: 3500
  *               status:
  *                 type: string
- *                 description: ID de MongoDB de VehicleStatusType
- *                 example: 671ff8890123456789abcde0
+ *                 enum: [Disponible, En ruta, En mantenimiento, Fuera de servicio]
+ *                 example: Disponible
  *     responses:
  *       201:
  *         description: Vehículo creado exitosamente.
  *       400:
- *         description: Datos requeridos faltantes o tipos inválidos.
+ *         description: Datos requeridos faltantes o valores no válidos.
  *       401:
  *         description: No autenticado.
  *       403:
@@ -157,13 +159,15 @@ router.post('/', authorize('coordinador'), (req, res, next) => vehicleController
  *                 example: AF999YY
  *               vehicleType:
  *                 type: string
- *                 example: 671ff8890123456789abcdef
+ *                 enum: [Auto, Camion, Moto, Furgon, Utilitario]
+ *                 example: Camion
  *               capacity:
  *                 type: number
  *                 example: 4000
  *               status:
  *                 type: string
- *                 example: 671ff8890123456789abcde0
+ *                 enum: [Disponible, En ruta, En mantenimiento, Fuera de servicio]
+ *                 example: En mantenimiento
  *     responses:
  *       200:
  *         description: Vehículo actualizado exitosamente.
@@ -207,8 +211,8 @@ router.put('/:id', authorize('coordinador'), (req, res, next) => vehicleControll
  *             properties:
  *               status:
  *                 type: string
- *                 description: ID de MongoDB del nuevo VehicleStatusType
- *                 example: 671ff8890123456789abcde0
+ *                 enum: [Disponible, En ruta, En mantenimiento, Fuera de servicio]
+ *                 example: En mantenimiento
  *     responses:
  *       200:
  *         description: Estado del vehículo actualizado.
@@ -219,7 +223,7 @@ router.put('/:id', authorize('coordinador'), (req, res, next) => vehicleControll
  *       403:
  *         description: Requiere rol coordinador.
  *       404:
- *         description: Vehículo o estado no encontrado.
+ *         description: Vehículo no encontrado.
  */
 router.patch('/:id/status', authorize('coordinador'), (req, res, next) => vehicleController.updateStatus(req, res, next));
 

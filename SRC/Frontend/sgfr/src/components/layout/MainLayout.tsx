@@ -7,6 +7,7 @@ import {
   CarOutlined,
   UserOutlined,
   LogoutOutlined,
+  InfoCircleOutlined,
 } from '@ant-design/icons';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks';
@@ -36,6 +37,11 @@ export const MainLayout: React.FC = () => {
       icon: <CarOutlined />,
       label: 'Vehículos',
     },
+    {
+      key: ROUTES.ABOUT,
+      icon: <InfoCircleOutlined />,
+      label: 'Acerca del Proyecto',
+    },
   ];
 
   const handleMenuClick: MenuProps['onClick'] = (e) => {
@@ -60,6 +66,12 @@ export const MainLayout: React.FC = () => {
           </Text>
         </div>
       ),
+    },
+    {
+      key: 'about',
+      icon: <InfoCircleOutlined />,
+      label: 'Acerca de',
+      onClick: () => navigate(ROUTES.ABOUT),
     },
     {
       type: 'divider',
@@ -88,7 +100,9 @@ export const MainLayout: React.FC = () => {
             fontSize: collapsed ? 16 : 18,
             letterSpacing: 1,
             background: 'rgba(255, 255, 255, 0.05)',
+            cursor: 'pointer',
           }}
+          onClick={() => navigate(ROUTES.HOME)}
         >
           {collapsed ? 'SGFR' : '🚚 SGFR'}
         </div>

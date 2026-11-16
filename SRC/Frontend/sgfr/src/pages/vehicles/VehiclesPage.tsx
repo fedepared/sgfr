@@ -1,145 +1,204 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Table, Tag, Button, Space, Card, Input, Modal, Form, InputNumber, App, Select } from 'antd';
+import {
+  Table,
+  Tag,
+  Button,
+  Space,
+  Card,
+  Input,
+  Modal,
+  Form,
+  InputNumber,
+  App,
+  Select,
+  Popconfirm,
+} from 'antd';
 import {
   PlusOutlined,
   ReloadOutlined,
   SearchOutlined,
   CarOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
+import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import { PageHeader } from '../../components/common';
 import { vehicleService } from '../../services';
-import type { Vehicle, VehicleTypeInfo, VehicleStatusInfo, CreateVehicleDTO } from '../../interfaces';
-
-const initialMockVehicles: Vehicle[] = [
-  {
-    _id: '1',
-    licensePlate: 'AF123CD',
-    capacity: 1500,
-    vehicleType: { _id: 't1', vehicleTypeName: 'Camioneta' },
-    status: { _id: 's1', vehicleStatusName: 'Disponible' },
-    createdAt: new Date().toISOString(),
-  },
-  {
-    _id: '2',
-    licensePlate: 'AD456EF',
-    capacity: 3500,
-    vehicleType: { _id: 't2', vehicleTypeName: 'Camión Ligero' },
-    status: { _id: 's2', vehicleStatusName: 'En Reparto' },
-    createdAt: new Date().toISOString(),
-  },
-  {
-    _id: '3',
-    licensePlate: 'AE789GH',
-    capacity: 800,
-    vehicleType: { _id: 't3', vehicleTypeName: 'Utilitario' },
-    status: { _id: 's3', vehicleStatusName: 'En Mantenimiento' },
-    createdAt: new Date().toISOString(),
-  },
-];
+import { useAuth } from '../../hooks';
+import { ROLES } from '../../constants/roles.constant';
+import {
+  VEHICLE_TYPES,
+  VEHICLE_STATUSES,
+  type Vehicle,
+  type VehicleType,
+  type VehicleStatus,
+  type CreateVehicleDTO,
+} from '../../interfaces';
 
 export const VehiclesPage: React.FC = () => {
-  const [vehicles, setVehicles] = useState<Vehicle[]>(initialMockVehicles);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [selectedStatus, setSelectedStatus] = useState<string | undefined>(undefined);
+  const [selectedType, setSelectedType] = useState<string | undefined>(undefined);
+  const [pagination, setPagination] = useState<{ current: number; pageSize: number; total: number }>({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
+
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
+
+  const { user } = useAuth();
   const { message } = App.useApp();
   const [form] = Form.useForm<CreateVehicleDTO>();
 
-  const fetchVehicles = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await vehicleService.getAll();
-      if (response?.data && response.data.length > 0) {
-        setVehicles(response.data);
+  const isCoordinator = user?.role === ROLES.COORDINATOR;
+
+  const fetchVehicles = useCallback(
+    async (
+      page: number,
+      limit: number,
+      search = searchTerm,
+      status = selectedStatus,
+      type = selectedType
+    ) => {
+      setLoading(true);
+      try {
+        const response = await vehicleService.getAll({
+          page,
+          limit,
+          search: search.trim() || undefined,
+          status: status || undefined,
+          vehicleType: type || undefined,
+        });
+
+        if (response?.data) {
+          setVehicles(response.data);
+          if (response.pagination) {
+            setPagination({
+              current: response.pagination.currentPage,
+              pageSize: response.pagination.limit,
+              total: response.pagination.totalItems,
+            });
+          }
+        }
+      } catch (err: unknown) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Error al conectar con la base de datos de vehículos.';
+        message.error(errorMessage);
+        setVehicles([]);
+      } finally {
+        setLoading(false);
       }
-    } catch {
-      setVehicles(initialMockVehicles);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [searchTerm, selectedStatus, selectedType, message]
+  );
 
   useEffect(() => {
     let active = true;
 
-    const load = async () => {
+    const loadInitial = async () => {
+      setLoading(true);
       try {
-        const response = await vehicleService.getAll();
-        if (active && response?.data && response.data.length > 0) {
+        const response = await vehicleService.getAll({
+          page: 1,
+          limit: 10,
+          search: searchTerm.trim() || undefined,
+          status: selectedStatus || undefined,
+          vehicleType: selectedType || undefined,
+        });
+
+        if (active && response?.data) {
           setVehicles(response.data);
+          if (response.pagination) {
+            setPagination({
+              current: response.pagination.currentPage,
+              pageSize: response.pagination.limit,
+              total: response.pagination.totalItems,
+            });
+          }
         }
-      } catch {
-        // Mantiene la lista inicial si el servidor está desconectado
+      } catch (err: unknown) {
+        if (active) {
+          const errorMessage =
+            err instanceof Error ? err.message : 'Error al conectar con la base de datos de vehículos.';
+          message.error(errorMessage);
+          setVehicles([]);
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
       }
     };
 
-    void load();
+    void loadInitial();
 
     return () => {
       active = false;
     };
-  }, []);
+  }, [selectedStatus, selectedType, message, searchTerm]);
+
+  const handleSearch = () => {
+    void fetchVehicles(1, pagination.pageSize, searchTerm, selectedStatus, selectedType);
+  };
+
+  const handleTableChange = (newPagination: TablePaginationConfig) => {
+    const nextCurrent = newPagination.current || 1;
+    const nextPageSize = newPagination.pageSize || 10;
+    void fetchVehicles(nextCurrent, nextPageSize, searchTerm, selectedStatus, selectedType);
+  };
 
   const handleCreateVehicle = async (values: CreateVehicleDTO) => {
     setSubmitting(true);
     try {
       await vehicleService.create({
-        licensePlate: values.licensePlate.toUpperCase(),
-        capacity: values.capacity,
-        vehicleTypeId: values.vehicleTypeId || 't1',
+        licensePlate: values.licensePlate.trim().toUpperCase(),
+        capacity: Number(values.capacity),
+        vehicleType: values.vehicleType,
+        status: values.status,
       });
-      message.success('Vehículo creado correctamente en el servidor');
+
+      message.success('Vehículo registrado exitosamente en la base de datos.');
       setIsModalOpen(false);
       form.resetFields();
-      void fetchVehicles();
-    } catch {
-      const newMockVehicle: Vehicle = {
-        _id: String(Date.now()),
-        licensePlate: values.licensePlate.toUpperCase(),
-        capacity: values.capacity,
-        vehicleType: { _id: 't1', vehicleTypeName: 'Utilitario' },
-        status: { _id: 's1', vehicleStatusName: 'Disponible' },
-        createdAt: new Date().toISOString(),
-      };
-      setVehicles((prev) => [newMockVehicle, ...prev]);
-      message.success('Vehículo agregado a la lista localmente');
-      setIsModalOpen(false);
-      form.resetFields();
+      void fetchVehicles(1, pagination.pageSize);
+    } catch (err: unknown) {
+      const errorMsg =
+        err instanceof Error ? err.message : 'No se pudo registrar el vehículo.';
+      message.error(errorMsg);
     } finally {
       setSubmitting(false);
     }
   };
 
+  const handleDeleteVehicle = async (id: string) => {
+    try {
+      await vehicleService.delete(id);
+      message.success('Vehículo eliminado exitosamente.');
+      void fetchVehicles(pagination.current, pagination.pageSize);
+    } catch (err: unknown) {
+      const errorMsg =
+        err instanceof Error ? err.message : 'Error al eliminar el vehículo.';
+      message.error(errorMsg);
+    }
+  };
+
   const getStatusColor = (statusName: string) => {
-    switch (statusName?.toLowerCase()) {
-      case 'disponible':
+    switch (statusName) {
+      case 'Disponible':
         return 'success';
-      case 'en reparto':
+      case 'En ruta':
         return 'processing';
-      case 'en mantenimiento':
+      case 'En mantenimiento':
         return 'warning';
-      case 'fuera de servicio':
+      case 'Fuera de servicio':
         return 'error';
       default:
         return 'default';
     }
   };
-
-  const getTypeName = (type: VehicleTypeInfo | string): string => {
-    if (typeof type === 'string') return type;
-    return type?.vehicleTypeName || 'General';
-  };
-
-  const getStatusText = (status: VehicleStatusInfo | string): string => {
-    if (typeof status === 'string') return status;
-    return status?.vehicleStatusName || 'Disponible';
-  };
-
-  const filteredVehicles = vehicles.filter((v) =>
-    v.licensePlate.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const columns: ColumnsType<Vehicle> = [
     {
@@ -157,7 +216,7 @@ export const VehiclesPage: React.FC = () => {
       title: 'Tipo de Vehículo',
       dataIndex: 'vehicleType',
       key: 'vehicleType',
-      render: (type: VehicleTypeInfo | string) => getTypeName(type),
+      render: (type: VehicleType) => <Tag>{type}</Tag>,
     },
     {
       title: 'Capacidad (kg)',
@@ -170,66 +229,132 @@ export const VehiclesPage: React.FC = () => {
       title: 'Estado',
       dataIndex: 'status',
       key: 'status',
-      render: (status: VehicleStatusInfo | string) => {
-        const text = getStatusText(status);
-        return <Tag color={getStatusColor(text)}>{text}</Tag>;
-      },
+      render: (status: VehicleStatus) => (
+        <Tag color={getStatusColor(status)}>{status}</Tag>
+      ),
     },
+    ...(isCoordinator
+      ? [
+          {
+            title: 'Acciones',
+            key: 'actions',
+            render: (_: unknown, record: Vehicle) => (
+              <Popconfirm
+                title="¿Eliminar vehículo?"
+                description={`¿Estás seguro de que deseas eliminar el vehículo ${record.licensePlate}?`}
+                onConfirm={() => void handleDeleteVehicle(record._id)}
+                okText="Sí, eliminar"
+                cancelText="Cancelar"
+                okButtonProps={{ danger: true }}
+              >
+                <Button type="text" danger icon={<DeleteOutlined />}>
+                  Eliminar
+                </Button>
+              </Popconfirm>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
     <div>
       <PageHeader
         title="Gestión de Vehículos"
-        subtitle="Administración del parque automotor y disponibilidad de la flota"
+        subtitle="Administración del parque automotor y disponibilidad de la flota en base de datos"
         extra={
           <Space>
-            <Button icon={<ReloadOutlined />} onClick={() => void fetchVehicles()} loading={loading}>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={() => void fetchVehicles(pagination.current, pagination.pageSize)}
+              loading={loading}
+            >
               Refrescar
             </Button>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setIsModalOpen(true)}
-            >
-              Nuevo Vehículo
-            </Button>
+            {isCoordinator && (
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => setIsModalOpen(true)}
+              >
+                Nuevo Vehículo
+              </Button>
+            )}
           </Space>
         }
       />
 
       <Card>
-        <Space style={{ marginBottom: 16 }}>
+        <Space wrap style={{ marginBottom: 16 }}>
           <Input
             placeholder="Buscar por patente..."
             prefix={<SearchOutlined />}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ width: 250 }}
+            onPressEnter={handleSearch}
+            style={{ width: 220 }}
             allowClear
           />
+
+          <Select
+            placeholder="Filtrar por tipo"
+            allowClear
+            style={{ width: 170 }}
+            value={selectedType}
+            onChange={(val) => setSelectedType(val)}
+            options={VEHICLE_TYPES.map((t) => ({ label: t, value: t }))}
+          />
+
+          <Select
+            placeholder="Filtrar por estado"
+            allowClear
+            style={{ width: 180 }}
+            value={selectedStatus}
+            onChange={(val) => setSelectedStatus(val)}
+            options={VEHICLE_STATUSES.map((s) => ({ label: s, value: s }))}
+          />
+
+          <Button type="primary" onClick={handleSearch} icon={<SearchOutlined />}>
+            Buscar
+          </Button>
         </Space>
 
         <Table
           rowKey="_id"
           columns={columns}
-          dataSource={filteredVehicles}
+          dataSource={vehicles}
           loading={loading}
-          pagination={{ pageSize: 5 }}
+          pagination={{
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
+            showSizeChanger: true,
+            pageSizeOptions: ['5', '10', '20', '50'],
+            showTotal: (total) => `Total: ${total} vehículos`,
+          }}
+          onChange={handleTableChange}
         />
       </Card>
 
       <Modal
         title="Registrar Nuevo Vehículo"
         open={isModalOpen}
-        onCancel={() => setIsModalOpen(false)}
+        onCancel={() => {
+          setIsModalOpen(false);
+          form.resetFields();
+        }}
         footer={null}
+        destroyOnClose
       >
         <Form<CreateVehicleDTO>
           form={form}
           layout="vertical"
           onFinish={(values) => void handleCreateVehicle(values)}
-          initialValues={{ capacity: 1000 }}
+          initialValues={{
+            vehicleType: 'Camion',
+            status: 'Disponible',
+            capacity: 1000,
+          }}
         >
           <Form.Item
             name="licensePlate"
@@ -241,37 +366,58 @@ export const VehiclesPage: React.FC = () => {
           >
             <Input placeholder="Ej: AF123CD" />
           </Form.Item>
+
           <Form.Item
             name="vehicleType"
-            label="Tipo de vehiculo"
-            rules={[
-              { required: true, message: 'El tipo de vehiculo es obligatoria' },
-            ]}
-            >
+            label="Tipo de Vehículo"
+            rules={[{ required: true, message: 'El tipo de vehículo es obligatorio' }]}
+          >
             <Select
-                defaultValue="lucy"
-                style={{ width: 120 }}
-                // onChange={handleChange}
-                options={[
-                  { value: 'jack', label: 'Jack' },
-                  { value: 'lucy', label: 'Lucy' },
-                  { value: 'Yiminghe', label: 'yiminghe' },
-                  { value: 'disabled', label: 'Disabled', disabled: true },
-                ]}
+              options={VEHICLE_TYPES.map((type) => ({
+                label: type,
+                value: type,
+              }))}
             />
-            
           </Form.Item>
+
+          <Form.Item
+            name="status"
+            label="Estado Inicial"
+            rules={[{ required: true, message: 'El estado es obligatorio' }]}
+          >
+            <Select
+              options={VEHICLE_STATUSES.map((status) => ({
+                label: status,
+                value: status,
+              }))}
+            />
+          </Form.Item>
+
           <Form.Item
             name="capacity"
             label="Capacidad de Carga (kg)"
-            rules={[{ required: true, message: 'La capacidad es obligatoria' }]}
+            rules={[
+              { required: true, message: 'La capacidad es obligatoria' },
+              {
+                type: 'number',
+                min: 0,
+                message: 'Debe ser un número mayor o igual a 0',
+              },
+            ]}
           >
-            <InputNumber min={50} max={50000} style={{ width: '100%' }} />
+            <InputNumber min={0} max={100000} style={{ width: '100%' }} />
           </Form.Item>
 
           <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
             <Space>
-              <Button onClick={() => setIsModalOpen(false)}>Cancelar</Button>
+              <Button
+                onClick={() => {
+                  setIsModalOpen(false);
+                  form.resetFields();
+                }}
+              >
+                Cancelar
+              </Button>
               <Button type="primary" htmlType="submit" loading={submitting}>
                 Guardar Vehículo
               </Button>

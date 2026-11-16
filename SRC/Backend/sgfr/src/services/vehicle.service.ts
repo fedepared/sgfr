@@ -1,14 +1,21 @@
 import mongoose from 'mongoose';
-import { VehicleModel } from '../data/vehicle';
+import { VehicleModel, Vehicle } from '../data/vehicle';
 import { AppError } from '../utils/AppError';
-import { getPaginationParams, PaginatedResponse, PaginationQuery } from '../utils/pagination';
+import { getPaginationParams, PaginatedResponse } from '../utils/pagination';
 import { VehicleFilterQuery, CreateVehicleDTO, UpdateVehicleDTO } from '../utils/DTOs/Vehicle';
 
 const VEHICLE_STATUSES = ['Disponible', 'En ruta', 'En mantenimiento', 'Fuera de servicio'] as const;
 type VehicleStatus = (typeof VEHICLE_STATUSES)[number];
 
+const VEHICLE_TYPES = ['Auto', 'Camion', 'Moto', 'Furgon', 'Utilitario'] as const;
+type VehicleTypeEnum = (typeof VEHICLE_TYPES)[number];
+
 const isVehicleStatus = (status: string): status is VehicleStatus => {
   return VEHICLE_STATUSES.includes(status as VehicleStatus);
+};
+
+const isVehicleType = (type: string): type is VehicleTypeEnum => {
+  return VEHICLE_TYPES.includes(type as VehicleTypeEnum);
 };
 
 export class VehicleService {
@@ -42,7 +49,12 @@ export class VehicleService {
     }
 
     if (query.vehicleType && query.vehicleType.trim()) {
-      if (!mongoose.isValidObjectId(query.vehicleType)) {
+      const requestedType = query.vehicleType.trim();
+      const matchingType = VEHICLE_TYPES.find(
+        (vType) => vType.toLowerCase() === requestedType.toLowerCase()
+      );
+
+      if (!matchingType) {
         return {
           data: [],
           pagination: {
@@ -54,7 +66,7 @@ export class VehicleService {
         };
       }
 
-      filter.vehicleType = query.vehicleType;
+      filter.vehicleType = matchingType;
     }
 
     const [totalItems, vehicles] = await Promise.all([
@@ -110,12 +122,18 @@ export class VehicleService {
       throw new AppError('La capacidad de carga debe ser un número mayor o igual a 0.', 400);
     }
 
-    if (!mongoose.isValidObjectId(vehicleType)) {
-      throw new AppError('Identificador de tipo de vehículo inválido.', 400);
+    if (!vehicleType || !isVehicleType(vehicleType)) {
+      throw new AppError(
+        `El tipo de vehículo no es válido. Valores aceptados: ${VEHICLE_TYPES.join(', ')}`,
+        400
+      );
     }
 
-    if (!isVehicleStatus(status)) {
-      throw new AppError('El estado de vehículo especificado no es válido.', 400);
+    if (!status || !isVehicleStatus(status)) {
+      throw new AppError(
+        `El estado de vehículo especificado no es válido. Valores aceptados: ${VEHICLE_STATUSES.join(', ')}`,
+        400
+      );
     }
 
     const newVehicle = await VehicleModel.create({
@@ -125,7 +143,7 @@ export class VehicleService {
       status,
     });
 
-    return await VehicleModel.findById(newVehicle._id);
+    return newVehicle;
   }
 
   async update(id: string, data: UpdateVehicleDTO) {
@@ -163,15 +181,21 @@ export class VehicleService {
     }
 
     if (data.vehicleType !== undefined) {
-      if (!mongoose.isValidObjectId(data.vehicleType)) {
-        throw new AppError('Identificador de tipo de vehículo inválido.', 400);
+      if (!isVehicleType(data.vehicleType)) {
+        throw new AppError(
+          `El tipo de vehículo no es válido. Valores aceptados: ${VEHICLE_TYPES.join(', ')}`,
+          400
+        );
       }
       updateFields.vehicleType = data.vehicleType;
     }
 
     if (data.status !== undefined) {
       if (!isVehicleStatus(data.status)) {
-        throw new AppError('El estado de vehículo especificado no es válido.', 400);
+        throw new AppError(
+          `El estado de vehículo especificado no es válido. Valores aceptados: ${VEHICLE_STATUSES.join(', ')}`,
+          400
+        );
       }
       updateFields.status = data.status;
     }
@@ -187,7 +211,10 @@ export class VehicleService {
     }
 
     if (!isVehicleStatus(status)) {
-      throw new AppError('El estado de vehículo especificado no es válido.', 400);
+      throw new AppError(
+        `El estado de vehículo especificado no es válido. Valores aceptados: ${VEHICLE_STATUSES.join(', ')}`,
+        400
+      );
     }
 
     const vehicle = await VehicleModel.findByIdAndUpdate(

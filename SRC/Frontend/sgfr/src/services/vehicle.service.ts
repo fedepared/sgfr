@@ -1,8 +1,16 @@
 import apiClient from './api.service';
-import type { CreateVehicleDTO, PaginatedResponse, Vehicle } from '../interfaces';
+import type { CreateVehicleDTO, UpdateVehicleDTO, PaginatedResponse, Vehicle } from '../interfaces';
+
+export interface VehicleQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  vehicleType?: string;
+}
 
 export const vehicleService = {
-  async getAll(params?: { page?: number; limit?: number; search?: string }): Promise<PaginatedResponse<Vehicle>> {
+  async getAll(params?: VehicleQueryParams): Promise<PaginatedResponse<Vehicle>> {
     const response = await apiClient.get<PaginatedResponse<Vehicle>>('/vehicles', { params });
     return response.data;
   },
@@ -17,7 +25,7 @@ export const vehicleService = {
     return response.data.data;
   },
 
-  async update(id: string, data: Partial<CreateVehicleDTO>): Promise<Vehicle> {
+  async update(id: string, data: UpdateVehicleDTO): Promise<Vehicle> {
     const response = await apiClient.put<{ status: string; data: Vehicle }>(`/vehicles/${id}`, data);
     return response.data.data;
   },
