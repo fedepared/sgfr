@@ -15,20 +15,21 @@ export class DriverService {
 
     if (query.search && query.search.trim()) {
       const searchTerm = query.search.trim();
-      const asNumber = Number(searchTerm);
 
-      if (!isNaN(asNumber)) {
-        filter.$or = [
-          { idCard: asNumber },
-          { name: { $regex: searchTerm, $options: 'i' } },
-          { lastName: { $regex: searchTerm, $options: 'i' } },
-        ];
-      } else {
-        filter.$or = [
-          { name: { $regex: searchTerm, $options: 'i' } },
-          { lastName: { $regex: searchTerm, $options: 'i' } },
-        ];
-      }
+      // Buscamos coincidencia parcial en nombre, apellido o DNI (convertido a string)
+      filter.$or = [
+        { name: { $regex: searchTerm, $options: 'i' } },
+        { lastName: { $regex: searchTerm, $options: 'i' } },
+        {
+          $expr: {
+            $regexMatch: {
+              input: { $toString: '$idCard' },
+              regex: searchTerm,
+              options: 'i',
+            },
+          },
+        },
+      ];
     }
 
     if (query.licenseType && query.licenseType.trim()) {
@@ -144,7 +145,6 @@ export class DriverService {
         throw new AppError('El usuario especificado no existe.', 404);
       }
 
-      // Validar que ese usuario no esté asignado ya a otro chofer
       const userAlreadyAssigned = await DriverModel.findOne({ user });
       if (userAlreadyAssigned) {
         throw new AppError('Este usuario ya se encuentra vinculado a otro chofer.', 409);

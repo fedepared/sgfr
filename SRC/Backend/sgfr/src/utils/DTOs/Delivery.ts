@@ -19,6 +19,7 @@ export interface DeliveryAnnotationDTO {
 }
 
 export interface DeliveryFilterQuery extends PaginationQuery {
+  search?: string;
   status?: string;
   customer?: string;
   timeRange?: string;

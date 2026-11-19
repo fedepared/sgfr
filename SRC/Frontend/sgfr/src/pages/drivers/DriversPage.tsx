@@ -534,9 +534,6 @@ export const DriversPage: React.FC = () => {
       >
         {viewingDriver && (
           <Descriptions bordered column={1} size="small" style={{ marginTop: 16 }}>
-            <Descriptions.Item label="Identificador Mongo">
-              <code>{viewingDriver._id}</code>
-            </Descriptions.Item>
             <Descriptions.Item label="Nombre Completo">
               <strong>
                 {viewingDriver.lastName}, {viewingDriver.name}

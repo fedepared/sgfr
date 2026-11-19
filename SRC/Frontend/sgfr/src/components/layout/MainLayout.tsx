@@ -6,6 +6,8 @@ import {
   DashboardOutlined,
   CarOutlined,
   TeamOutlined,
+  SendOutlined,
+  UsergroupAddOutlined,
   UserOutlined,
   LogoutOutlined,
   InfoCircleOutlined,
@@ -13,6 +15,7 @@ import {
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks';
 import { ROUTES } from '../../constants/routes.constant';
+import { ROLES } from '../../constants/roles.constant';
 import type { MenuProps } from 'antd';
 
 const { Header, Sider, Content, Footer } = Layout;
@@ -26,6 +29,8 @@ export const MainLayout: React.FC = () => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+
+  const isCoordinator = user?.role === ROLES.COORDINATOR;
 
   const menuItems: MenuProps['items'] = [
     {
@@ -43,6 +48,21 @@ export const MainLayout: React.FC = () => {
       icon: <TeamOutlined />,
       label: 'Choferes',
     },
+    // Vistas exclusivas de Coordinador
+    ...(isCoordinator
+      ? [
+          {
+            key: ROUTES.DELIVERIES,
+            icon: <SendOutlined />,
+            label: 'Entregas',
+          },
+          {
+            key: ROUTES.CUSTOMERS,
+            icon: <UsergroupAddOutlined />,
+            label: 'Clientes',
+          },
+        ]
+      : []),
     {
       key: ROUTES.ABOUT,
       icon: <InfoCircleOutlined />,

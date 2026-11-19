@@ -11,20 +11,22 @@ export class CustomerService {
 
     if (query.search && query.search.trim()) {
       const searchTerm = query.search.trim();
-      const asNumber = Number(searchTerm);
 
-      if (!isNaN(asNumber)) {
-        filter.$or = [
-          { idCard: asNumber },
-          { name: { $regex: searchTerm, $options: 'i' } },
-          { lastName: { $regex: searchTerm, $options: 'i' } },
-        ];
-      } else {
-        filter.$or = [
-          { name: { $regex: searchTerm, $options: 'i' } },
-          { lastName: { $regex: searchTerm, $options: 'i' } },
-        ];
-      }
+      // Buscamos coincidencia parcial en nombre, apellido, calle o DNI/CUIT (como string)
+      filter.$or = [
+        { name: { $regex: searchTerm, $options: 'i' } },
+        { lastName: { $regex: searchTerm, $options: 'i' } },
+        { 'addresses.street': { $regex: searchTerm, $options: 'i' } },
+        {
+          $expr: {
+            $regexMatch: {
+              input: { $toString: '$idCard' },
+              regex: searchTerm,
+              options: 'i',
+            },
+          },
+        },
+      ];
     }
 
     const [totalItems, customers] = await Promise.all([
@@ -86,7 +88,6 @@ export class CustomerService {
       throw new AppError('Debe ingresar al menos una dirección para el cliente.', 400);
     }
 
-    // Validar que cada dirección tenga al menos calle
     const sanitizedAddresses: CustomerAddressDTO[] = addresses.map((addr, index) => {
       if (!addr.street || !addr.street.trim()) {
         throw new AppError(`La dirección #${index + 1} debe contener una calle válida.`, 400);

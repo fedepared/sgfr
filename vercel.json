@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "sgfr-backend": {
+      "root": "SRC/Backend/sgfr",
+      "framework": "express"
+    },
+    "sgfr-frontend": {
+      "root": "SRC/Frontend/sgfr",
+      "framework": "vite"
+    }
+  },
+  "rewrites": []
+}

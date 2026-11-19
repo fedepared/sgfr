@@ -508,9 +508,6 @@ export const VehiclesPage: React.FC = () => {
       >
         {viewingVehicle && (
           <Descriptions bordered column={1} size="small" style={{ marginTop: 16 }}>
-            <Descriptions.Item label="Identificador Mongo">
-              <code>{viewingVehicle._id}</code>
-            </Descriptions.Item>
             <Descriptions.Item label="Patente / Matrícula">
               <strong>{viewingVehicle.licensePlate}</strong>
             </Descriptions.Item>

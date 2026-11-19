@@ -18,6 +18,11 @@ router.use(authenticate);
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Búsqueda parcial por dirección u observaciones
+ *       - in: query
  *         name: page
  *         schema:
  *           type: integer

@@ -2,8 +2,18 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { MainLayout } from '../components/layout';
 import { ProtectedRoute } from '../components/common';
-import { HomePage, LoginPage, VehiclesPage, DriversPage, AboutPage, NotFoundPage } from '../pages';
+import {
+  HomePage,
+  LoginPage,
+  VehiclesPage,
+  DriversPage,
+  DeliveriesPage,
+  CustomersPage,
+  AboutPage,
+  NotFoundPage,
+} from '../pages';
 import { ROUTES } from '../constants/routes.constant';
+import { ROLES } from '../constants/roles.constant';
 import { useAuth } from '../hooks';
 
 /**
@@ -53,12 +63,20 @@ export const AppRouter: React.FC = () => {
           <Route index element={<AboutPage />} />
         </Route>
 
-        {/* Rutas protegidas que requieren autenticación */}
+        {/* Rutas compartidas (Coordinador y Chofer) */}
         <Route element={<ProtectedRoute />}>
           <Route element={<MainLayout />}>
             <Route path={ROUTES.HOME} element={<HomePage />} />
             <Route path={ROUTES.VEHICLES} element={<VehiclesPage />} />
             <Route path={ROUTES.DRIVERS} element={<DriversPage />} />
+          </Route>
+        </Route>
+
+        {/* Rutas EXCLUSIVAS para Coordinador */}
+        <Route element={<ProtectedRoute allowedRoles={[ROLES.COORDINATOR]} />}>
+          <Route element={<MainLayout />}>
+            <Route path={ROUTES.DELIVERIES} element={<DeliveriesPage />} />
+            <Route path={ROUTES.CUSTOMERS} element={<CustomersPage />} />
           </Route>
         </Route>
 

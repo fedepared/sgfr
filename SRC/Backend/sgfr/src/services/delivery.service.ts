@@ -28,6 +28,14 @@ export class DeliveryService {
     const { page, limit, skip } = getPaginationParams(query);
     const filter: Record<string, any> = {};
 
+    if (query.search && query.search.trim()) {
+      const searchTerm = query.search.trim();
+      filter.$or = [
+        { address: { $regex: searchTerm, $options: 'i' } },
+        { 'annotations.detail': { $regex: searchTerm, $options: 'i' } },
+      ];
+    }
+
     if (query.status && query.status.trim()) {
       if (isDeliveryStatus(query.status.trim())) {
         filter.status = query.status.trim();
