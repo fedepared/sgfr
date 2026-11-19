@@ -11,16 +11,17 @@
     }
   },
   "rewrites": [
-   {
-      "source": "/api/(.*)",
-      "destination": { "service": "sgfr-backend" }
-   },
-   {
-      "source": "/api-docs/(.*)",
-      "destination": { "service": "sgfr-backend" }
-   },
-   {
-      "source": "/(.*)",
-      "destination": { "service": "sgfr-frontend" }
-   }
+    {
+       "source": "/api/(.*)",
+       "destination": { "service": "sgfr-backend" }
+    },
+    {
+       "source": "/api-docs/(.*)",
+       "destination": { "service": "sgfr-backend" }
+    },
+    {
+       "source": "/(.*)",
+       "destination": { "service": "sgfr-frontend" }
+    }
+   ]
 }
