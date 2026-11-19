@@ -3,25 +3,29 @@
   "services": {
     "sgfr-backend": {
       "root": "SRC/Backend/sgfr",
-      "framework": "express"
+      "framework": "express",
+      "installCommand": "npm install",
+      "buildCommand": "npm run build"
     },
     "sgfr-frontend": {
       "root": "SRC/Frontend/sgfr",
-      "framework": "vite"
+      "framework": "vite",
+      "installCommand": "npm install",
+      "buildCommand": "npm run build"
     }
   },
   "rewrites": [
     {
-       "source": "/api/(.*)",
-       "destination": { "service": "sgfr-backend" }
+      "source": "/api/(.*)",
+      "destination": { "service": "sgfr-backend" }
     },
     {
-       "source": "/api-docs/(.*)",
-       "destination": { "service": "sgfr-backend" }
+      "source": "/api-docs/(.*)",
+      "destination": { "service": "sgfr-backend" }
     },
     {
-       "source": "/(.*)",
-       "destination": { "service": "sgfr-frontend" }
+      "source": "/(.*)",
+      "destination": { "service": "sgfr-frontend" }
     }
-   ]
+  ]
 }
