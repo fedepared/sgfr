@@ -8,6 +8,7 @@ import { DriverModel } from '../data/driver';
 import { CustomerModel } from '../data/customer';
 import { VehicleModel } from '../data/vehicle';
 import { VehicleMaintenanceModel } from '../data/vehicleMaintenance';
+import { DeliveryModel } from '../data/delivery';
 import { RoadMapModel } from '../data/roadMap';
 
 const seedDatabase = async () => {
@@ -282,36 +283,46 @@ const seedDatabase = async () => {
         },
       });
 
+      // Creamos primero las entregas como documentos independientes
+      let delivery1 = await DeliveryModel.findOne({ customer: cliente1._id, address: new RegExp(cliente1.addresses[0].street, 'i') });
+      if (!delivery1) {
+        delivery1 = await DeliveryModel.create({
+          customer: cliente1._id,
+          address: `${cliente1.addresses[0].street}, Piso ${cliente1.addresses[0].floor} ${cliente1.addresses[0].dept}`,
+          timeRange: '8:00 a 13:00',
+          status: 'En camino',
+          distance: 12.5,
+          annotations: [
+            {
+              detail: 'El cliente solicitó timbre fuerte o llamar por teléfono al llegar.',
+              status: 'En camino',
+            },
+          ],
+        });
+        console.log(`  + Entrega #1 creada para cliente ${cliente1.name}`);
+      }
+
+      let delivery2 = await DeliveryModel.findOne({ customer: cliente2._id, address: new RegExp(cliente2.addresses[0].street, 'i') });
+      if (!delivery2) {
+        delivery2 = await DeliveryModel.create({
+          customer: cliente2._id,
+          address: `${cliente2.addresses[0].street}, Piso ${cliente2.addresses[0].floor} ${cliente2.addresses[0].dept}`,
+          timeRange: '13:00 a 18:00',
+          status: 'Creado',
+          distance: 8.2,
+          annotations: [],
+        });
+        console.log(`  + Entrega #2 creada para cliente ${cliente2.name}`);
+      }
+
       if (!existingRoadMap) {
         await RoadMapModel.create({
           date: new Date(),
           vehicle: vehiculoEnRutaDoc._id,
           driver: choferDoc._id,
-          deliveries: [
-            {
-              customer: cliente1._id,
-              address: `${cliente1.addresses[0].street}, Piso ${cliente1.addresses[0].floor} ${cliente1.addresses[0].dept}`,
-              timeRange: '8:00 a 13:00',
-              status: 'En camino',
-              distance: 12.5,
-              annotations: [
-                {
-                  detail: 'El cliente solicitó timbre fuerte o llamar por teléfono al llegar.',
-                  status: 'En camino',
-                },
-              ],
-            },
-            {
-              customer: cliente2._id,
-              address: `${cliente2.addresses[0].street}, Piso ${cliente2.addresses[0].floor} ${cliente2.addresses[0].dept}`,
-              timeRange: '13:00 a 18:00',
-              status: 'Creado',
-              distance: 8.2,
-              annotations: [],
-            },
-          ],
+          deliveries: [delivery1._id, delivery2._id],
         });
-        console.log(`  + Hoja de ruta creada para chofer ${choferDoc.name} con 2 entregas asignadas.`);
+        console.log(`  + Hoja de ruta creada para chofer ${choferDoc.name} con las 2 entregas vinculadas.`);
       } else {
         console.log(`  = Hoja de ruta del día ya existente para chofer ${choferDoc.name}.`);
       }

@@ -1,5 +1,5 @@
 import apiClient from './api.service';
-import type { CreateVehicleDTO, UpdateVehicleDTO, PaginatedResponse, Vehicle } from '../interfaces';
+import type { CreateVehicleDTO, UpdateVehicleDTO, PaginatedResponse, Vehicle, VehicleStatus } from '../interfaces';
 
 export interface VehicleQueryParams {
   page?: number;
@@ -27,6 +27,11 @@ export const vehicleService = {
 
   async update(id: string, data: UpdateVehicleDTO): Promise<Vehicle> {
     const response = await apiClient.put<{ status: string; data: Vehicle }>(`/vehicles/${id}`, data);
+    return response.data.data;
+  },
+
+  async updateStatus(id: string, status: VehicleStatus): Promise<Vehicle> {
+    const response = await apiClient.patch<{ status: string; data: Vehicle }>(`/vehicles/${id}/status`, { status });
     return response.data.data;
   },
 

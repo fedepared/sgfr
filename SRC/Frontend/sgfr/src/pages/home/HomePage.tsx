@@ -1,5 +1,5 @@
 import React from 'react';
-import { Row, Col, Card, Statistic, Button, Divider } from 'antd';
+import { Row, Col, Card, Statistic, Button, Divider, Skeleton } from 'antd';
 import {
   CarOutlined,
   CheckCircleOutlined,
@@ -8,13 +8,22 @@ import {
   InfoCircleOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks';
+import { useAuth, useFetch } from '../../hooks';
 import { PageHeader } from '../../components/common';
 import { ROUTES } from '../../constants/routes.constant';
+import { env } from '../../configs/env.config';
+import type { PaginatedResponse, Vehicle } from '../../interfaces';
 
 export const HomePage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Consumo dinámico de vehículos para las estadísticas del dashboard
+  const { data: vehiclesData, loading: loadingVehicles } = useFetch<PaginatedResponse<Vehicle>>(
+    `${env.API_BASE_URL}/vehicles?limit=1`
+  );
+
+  const totalVehicles = vehiclesData?.pagination?.totalItems ?? 0;
 
   return (
     <div>
@@ -34,40 +43,44 @@ export const HomePage: React.FC = () => {
 
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable variant='borderless' style={{ background: '#f0f5ff' }}>
-            <Statistic
-              title="Vehículos en Flota"
-              value={4}
-              prefix={<CarOutlined style={{ color: '#1677ff' }} />}
-            />
+          <Card hoverable variant="borderless" style={{ background: '#f0f5ff' }}>
+            {loadingVehicles ? (
+              <Skeleton active paragraph={{ rows: 1 }} />
+            ) : (
+              <Statistic
+                title="Vehículos en Flota"
+                value={totalVehicles}
+                prefix={<CarOutlined style={{ color: '#1677ff' }} />}
+              />
+            )}
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable variant='borderless' style={{ background: '#f6ffed' }}>
+          <Card hoverable variant="borderless" style={{ background: '#f6ffed' }}>
             <Statistic
               title="Repartos Completados"
               value={0}
-              styles={{content: {color: '#52c41a'} }}
+              styles={{ content: { color: '#52c41a' } }}
               prefix={<CheckCircleOutlined />}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable variant='borderless' style={{ background: '#fffbe6' }}>
+          <Card hoverable variant="borderless" style={{ background: '#fffbe6' }}>
             <Statistic
               title="Entregas Pendientes"
               value={0}
-              styles={{content:{ color: '#faad14' }}}
+              styles={{ content: { color: '#faad14' } }}
               prefix={<ClockCircleOutlined />}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card hoverable variant='borderless' style={{ background: '#fff0f6' }}>
+          <Card hoverable variant="borderless" style={{ background: '#fff0f6' }}>
             <Statistic
               title="Mantenimientos Activos"
               value={0}
-              styles={{content:{ color: '#eb2f96' }}}
+              styles={{ content: { color: '#eb2f96' } }}
             />
           </Card>
         </Col>

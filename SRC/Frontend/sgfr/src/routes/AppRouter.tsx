@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { MainLayout } from '../components/layout';
 import { ProtectedRoute } from '../components/common';
-import { HomePage, LoginPage, VehiclesPage, AboutPage, NotFoundPage } from '../pages';
+import { HomePage, LoginPage, VehiclesPage, DriversPage, AboutPage, NotFoundPage } from '../pages';
 import { ROUTES } from '../constants/routes.constant';
 import { useAuth } from '../hooks';
 
@@ -14,9 +14,7 @@ const AboutRouteWrapper: React.FC = () => {
   const { isAuthenticated } = useAuth();
 
   if (isAuthenticated) {
-    return (
-      <MainLayout />
-    );
+    return <MainLayout />;
   }
 
   return (
@@ -60,6 +58,7 @@ export const AppRouter: React.FC = () => {
           <Route element={<MainLayout />}>
             <Route path={ROUTES.HOME} element={<HomePage />} />
             <Route path={ROUTES.VEHICLES} element={<VehiclesPage />} />
+            <Route path={ROUTES.DRIVERS} element={<DriversPage />} />
           </Route>
         </Route>
 

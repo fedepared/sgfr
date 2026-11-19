@@ -5,6 +5,7 @@ import {
   MenuUnfoldOutlined,
   DashboardOutlined,
   CarOutlined,
+  TeamOutlined,
   UserOutlined,
   LogoutOutlined,
   InfoCircleOutlined,
@@ -36,6 +37,11 @@ export const MainLayout: React.FC = () => {
       key: ROUTES.VEHICLES,
       icon: <CarOutlined />,
       label: 'Vehículos',
+    },
+    {
+      key: ROUTES.DRIVERS,
+      icon: <TeamOutlined />,
+      label: 'Choferes',
     },
     {
       key: ROUTES.ABOUT,
