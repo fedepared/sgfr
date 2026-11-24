@@ -4,8 +4,8 @@
     "sgfr-backend": {
       "root": "SRC/Backend/sgfr",
       "framework": "express",
-      "installCommand": "npm install",
-      "buildCommand": "npm run build"
+      "entrypoint": "src/index.ts",
+      "installCommand": "npm install"
     },
     "sgfr-frontend": {
       "root": "SRC/Frontend/sgfr",
