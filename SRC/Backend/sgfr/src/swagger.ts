@@ -15,6 +15,10 @@ const options: swaggerJSDoc.Options = {
     },
     servers: [
       {
+        url: '/',
+        description: 'Servidor actual (Vercel / Local)',
+      },
+      {
         url: 'http://localhost:4000',
         description: 'Servidor local de desarrollo',
       },

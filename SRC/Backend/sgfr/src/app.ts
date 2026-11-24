@@ -33,8 +33,19 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Swagger
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Swagger (con CDN para compatibilidad con Vercel Serverless)
+const SWAGGER_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0';
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    customCssUrl: `${SWAGGER_CDN}/swagger-ui.min.css`,
+    customJs: [
+      `${SWAGGER_CDN}/swagger-ui-bundle.min.js`,
+      `${SWAGGER_CDN}/swagger-ui-standalone-preset.min.js`,
+    ],
+  })
+);
 
 // Ruta base de prueba
 app.get('/', (req: Request, res: Response) => {
